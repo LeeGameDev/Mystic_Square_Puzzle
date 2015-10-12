@@ -1,32 +1,39 @@
-﻿using UnityEngine;
+﻿/*! 
+ * \file Board.cs
+ */
+
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
+/*!
+ * \class Board
+ * 
+ * \brief The game Board holds the Tiles that the player slides.
+ * 
+ * The game Board holds the Tiles that the player slides. When the Tiles are arranged from 1..15
+ * with the last space being the empty tile, the player wins.
+ */
 public class Board : MonoBehaviour
 {
-	public static Board instance;
+	public static Board instance;	//!< Static reference to this. Only one Board instance should exist.
 
-	public Tile[] tiles;
-	public Tile emptyTile;
-	public Text movesText;
-	public bool isSolved = true;
+	public Tile[] tiles;			//!< All of the board's tiles.
+	public Tile emptyTile;			//!< The empty board tile.
+	public Text movesText;			//!< uGUI The total number of moves.
+	public bool isSolved = true;	//!< Flag for the board being solved.
 
-	private int moves = 0;
-	private int tileBitLocator;
+	private int moves = 0;			// Sentinel counts the total number of moves
 
-	void Awake()
+	// Use this for initialization
+	private void Start()
 	{
 		instance = this;
 	}
 
-	// Checks if the selected tile can slide to the empty tile
-	public bool IsValidSlide(Tile selectedTile)
-	{
-		float indexDifference = Mathf.Abs(selectedTile.transform.GetSiblingIndex() - emptyTile.transform.GetSiblingIndex());
-		return (indexDifference == 1) || (indexDifference == 4);
-	}
-
-	// Scrambles the board and updates UI accordingly
+	/*!
+	 * \brief Scrambles the board and updates the uGUI Tiles & Board accordingly.
+	 */
 	public void ScrambleBoard()
 	{
 		// Scramble all board tiles
@@ -49,7 +56,7 @@ public class Board : MonoBehaviour
 	private void Scramble()
 	{
 		// 0 out bits in char
-		tileBitLocator = 0;
+		int tileBitLocator = 0;
 
 		// Traverse all tiles
 		foreach (Tile t in tiles)
@@ -136,19 +143,27 @@ public class Board : MonoBehaviour
 		return numInversions;
 	}
 
-	// Slides the selected tile to the empty tile if it is valid
-	public bool SlideTile(Tile selectedTile)
+	/*!
+	 * \brief Slides the selected tile to the empty tile if it is valid.
+	 * 
+	 * \see TrySlide()
+	 * 
+	 * \param t The tile to slide.
+	 * 
+	 * \return true if the Tile slid successfully, false otherwise.
+	 */
+	public bool SlideTile(Tile t)
 	{
 		bool result = false;
 
-		if (!isSolved && IsValidSlide(selectedTile))
+		if (!isSolved && IsValidSlide(t))
 		{
 			// Cache the tile indices
-			int selectedIndex = selectedTile.transform.GetSiblingIndex();
+			int selectedIndex = t.transform.GetSiblingIndex();
 			int emptyIndex = emptyTile.transform.GetSiblingIndex();
 
 			// Swap tile locations
-			selectedTile.transform.SetSiblingIndex(emptyIndex);
+			t.transform.SetSiblingIndex(emptyIndex);
 			emptyTile.transform.SetSiblingIndex(selectedIndex);
 
 			// Increment the user's moves
@@ -171,8 +186,29 @@ public class Board : MonoBehaviour
 		return result;
 	}
 	
-	// Returns true if the tiles are arranged from 1..15 with the last space being the empty tile
-	private bool IsWin()
+	/*!
+	 * \brief Checks if the selected tile can slide to the empty tile.
+	 * 
+	 * \see bool SlideTile(Tile)
+	 * 
+	 * \param t The Tile to check.
+	 * 
+	 * \return true if the Tile can be slid, false otherwise.
+	 */
+	public bool IsValidSlide(Tile t)
+	{
+		float indexDifference = Mathf.Abs(t.transform.GetSiblingIndex() - emptyTile.transform.GetSiblingIndex());
+		return (indexDifference == 1) || (indexDifference == 4);
+	}
+
+	/*!
+	 * \brief Checks if all tiles are in the correct positions, false otherwise.
+	 * 
+	 * \see bool IsTileInCorrectSpot(Tile)
+	 * 
+	 * \return true if the tiles are arranged from 1..15 with the last space being the empty tile, false otherwise.
+	 */
+	public bool IsWin()
 	{
 		foreach (Tile t in tiles)
 		{
@@ -184,6 +220,15 @@ public class Board : MonoBehaviour
 		return true;
 	}
 
+	/*!
+	 * \brief Checks if the tile number is the same as its relative sibling index.
+	 * 
+	 * \see bool IsWin()
+	 * 
+	 * \param t The Tile to check.
+	 * 
+	 * \return true if the Tile is in the correct position, false otherwise.
+	 */
 	public bool IsTileInCorrectSpot(Tile t)
 	{
 		return (t.tileNumber - 1) != t.transform.GetSiblingIndex();

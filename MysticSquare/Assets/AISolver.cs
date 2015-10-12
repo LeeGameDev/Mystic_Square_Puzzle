@@ -52,16 +52,11 @@ public class AISolver : MonoBehaviour
 				List<int> pathIndices = ComputePath(board.emptyTile, tileIndex - 1);
 
 				// Execute Path
-				bool result = ExecutePath(pathIndices);
+				ExecutePath(pathIndices);
 
 				// Complete move by sliding tile to solve
-				if (result)
-				{
-					if (tileToSolve.TrySlide())
-					{
-						--tileIndex;
-					}
-				}
+				tileToSolve.TrySlide();
+				--tileIndex;
 			}
 		}
 	}
@@ -74,15 +69,13 @@ public class AISolver : MonoBehaviour
 	}
 
 	// Execute path
-	private bool ExecutePath(List<int> pathIndices)
+	private void ExecutePath(List<int> pathIndices)
 	{
-		bool result = true;
 		for (int i = 0; i < pathIndices.Count; i++)
 		{
 			// Get the tile adjacent to the empty tile that satisfies the path and slide it
-			result &= GetTileByNumber(pathIndices[i]).TrySlide();
+			board.SlideTile(GetTileByNumber(pathIndices[i]));
 		}
-		return result;
 	}
 
 	private Tile GetTileByNumber(int tileNumber)
